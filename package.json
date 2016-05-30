@@ -1,0 +1,36 @@
+{
+  "name": "electron-chrome-extensions",
+  "version": "0.1.0",
+  "description": "Support Chrome extensions in Electron",
+  "main": "lib/index.js",
+  "files": [
+    "lib/",
+    "LICENSE"
+  ],
+  "scripts": {
+    "lint": "standard",
+    "nodeunit": "node node_modules/nodeunit/bin/nodeunit test/test.js",
+    "test": "npm run lint && npm run nodeunit"
+  },
+  "standard": {
+    "ignore": [
+      "node_modules/**",
+      "test/**"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/jazzdev/electron-chrome-extensions.git"
+  },
+  "keywords": [],
+  "author": "JD Brennan <jazzdev@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jazzdev/electron-chrome-extensions/issues"
+  },
+  "homepage": "https://github.com/jazzdev/electron-chrome-extensions",
+  "devDependencies": {
+    "standard": "^5.0.0",
+    "nodeunit": "^0.9.0"
+  }
+}
