@@ -28,12 +28,30 @@ function loadExtension (path, callback) {
   fs.readFile(path + '/manifest.json', (err, contents) => {
     if (err) return callback(null, { name: err.name, description: err.message })
     var manifest = JSON.parse(contents)
-    callback(null, {
+    var extension = {
       path: path,
       name: manifest.name,
       description: manifest.description,
       version: manifest.version
-    })
+    }
+    localizeStrings(extension, callback)
+  })
+}
+
+function localizeStrings (extension, callback) {
+  var file = extension.path + '/_locales/en/messages.json'
+  fs.readFile(file, (err, contents) => {
+    if (err) {
+      return callback(null, extension) // return as-is
+    }
+    if (extension.name.startsWith('__MSG_')) {
+      var msgName = extension.name.substring(6, extension.name.length - 2)
+      var messages = JSON.parse(contents)
+      if (messages[msgName]) extension.name = messages[msgName].message
+      else if (messages[msgName.toLowerCase()]) extension.name = messages[msgName.toLowerCase()].message
+      else console.log(`No ${msgName} found in ${JSON.stringify(messages)}`)
+    }
+    callback(null, extension)
   })
 }
 
