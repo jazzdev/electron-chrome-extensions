@@ -1,3 +1,5 @@
+'use strict'
+
 var chromeExtensions = require('../src/main')
 
 exports.testExport = function(test) {
@@ -10,11 +12,40 @@ exports.testExport = function(test) {
 exports.testLoad = function(test) {
   chromeExtensions.load(chromeExtensions.defaultPath, function(err, extensions) {
     if (err) throw err
-    test.expect(extensions.size)
+    test.expect(extensions.length)
     extensions.forEach(function(extension) {
       test.equal(typeof(extension.name), 'string', 'Extension does not have a name')
       console.log('Found extension ' + extension.name)
     })
+    test.done()
+  })
+}
+
+class MockWebView {
+  constructor(url) {
+    this.url = url;
+  }
+
+  get src() {
+    return this.url;
+  }
+
+  executeJavaScript(code, userGesture, callback) {
+    console.log('webview: executing script...')
+  }
+}
+
+exports.testAdd = function(test) {
+  test.expect(3)
+  chromeExtensions.load(__dirname + '/../test/extensions', function(err, extensions) {
+    if (err) throw err
+    test.equal(1, extensions.length)
+    var extension = extensions[0]
+    test.equal(typeof(extension.name), 'string', 'Extension does not have a name')
+    console.log('Found extension ' + extension.name)
+    var webview = new MockWebView('http://www.google.com/')
+    // returns true if the extension was applied
+    test.equal(true, chromeExtensions.addToWebview(webview, extension), 'Extension did not match')
     test.done()
   })
 }

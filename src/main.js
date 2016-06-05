@@ -1,3 +1,5 @@
+'use strict'
+
 var os = require('os')
 var fs = require('fs')
 var async = require('async')
@@ -32,7 +34,8 @@ function loadExtension (path, callback) {
       path: path,
       name: manifest.name,
       description: manifest.description,
-      version: manifest.version
+      version: manifest.version,
+      content_scripts: manifest.content_scripts
     }
     localizeStrings(extension, callback)
   })
@@ -56,5 +59,25 @@ function localizeStrings (extension, callback) {
 }
 
 exports.addToWebview = function (webview, extension) {
+  if (matches(extension, webview)) {
+    webview.executeJavaScript(getScript(extension))
+    return true
+  }
+  return false
+}
 
+function matches (extension, webview) {
+  var success = false
+  extension.content_scripts.forEach((script) => {
+    script.matches.forEach((match) => {
+      let pattern = match.replace(/\*/g, '.*')
+      if (webview.src.match(pattern)) {
+        success = true
+      }
+    })
+  })
+  return success
+}
+
+function getScript (extension) {
 }

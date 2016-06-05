@@ -1,0 +1,13 @@
+{
+  "content_scripts": [ {
+    "exclude_globs": [  ],
+    "include_globs": [ "*://www.google.com/*" ],
+    "js": [ "script.js" ],
+    "matches": [ "http://*/*", "https://*/*" ]
+  } ],
+  "converted_from_user_script": true,
+  "description": "Make Google search have a red background",
+  "key": "YDbAyByO/wxqo08K7RepyCrwIqdqH6snB9cU/YMGfME=",
+  "name": "Red Google",
+  "version": "1.1"
+}
