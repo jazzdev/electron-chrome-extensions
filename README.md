@@ -8,12 +8,16 @@ Support for Chrome Extensions in Electron apps
 ## Usage
 
 ```js
-var electronChromeExtensions = require('electron-chrome-extensions')
+var chromeExtensions = require('electron-chrome-extensions')
 
-extensions = electronChromeExtensions().load()
-extensions.forEach(function (extension) {
-  electronChromeExtensions.addToWebview(webview, extension)
-}
+webview.addEventListener('dom-ready', () => {
+  extensions = chromeExtensions.load(chromeExtensions.defaultPath, (err, extensions) => {
+    extensions.forEach((extension) => {
+      chromeExtensions.addToWebview(webview, extension, (err) => {
+      })
+    })
+  })
+})
 ```
 
 ## Installation

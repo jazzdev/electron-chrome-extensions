@@ -4,13 +4,21 @@ var os = require('os')
 var fs = require('fs')
 var async = require('async')
 
-exports.defaultPath = os.type() === 'Darwin'
-  ? process.env.HOME + '/Library/Application Support/Google/Chrome/Default/Extensions'
-  : (os.type() === 'Windows_NT'
-     ? process.env.USER_PROFILE + '/AppData/Local/Google/Chrome/User Data/Default'
-     : process.env.HOME + '/.config/google-chrome/Default/Extensions/')
+exports.defaultPath = getExtensionsPath()
+exports.load = load
+exports.addToWebview = addToWebview
 
-exports.load = function (path, callback) {
+function getExtensionsPath () {
+  if (os.type() === 'Darwin') {
+    return process.env.HOME + '/Library/Application Support/Google/Chrome/Default/Extensions'
+  } else if (os.type() === 'Windows_NT') {
+    return process.env.USER_PROFILE + '/AppData/Local/Google/Chrome/User Data/Default'
+  } else { // Linux
+    return process.env.HOME + '/.config/google-chrome/Default/Extensions/'
+  }
+}
+
+function load (path, callback) {
   fs.readdir(path, (err, extensionIds) => {
     if (err) return callback(err)
     async.map(extensionIds, (id, cb) => loadVersions(path + '/' + id, cb), (err, extensions) => {
@@ -58,26 +66,39 @@ function localizeStrings (extension, callback) {
   })
 }
 
-exports.addToWebview = function (webview, extension) {
-  if (matches(extension, webview)) {
-    webview.executeJavaScript(getScript(extension))
-    return true
-  }
-  return false
-}
-
-function matches (extension, webview) {
-  var success = false
-  extension.content_scripts.forEach((script) => {
-    script.matches.forEach((match) => {
-      let pattern = match.replace(/\*/g, '.*')
-      if (webview.src.match(pattern)) {
-        success = true
-      }
+function addToWebview (webview, extension, callback) {
+  let content_scripts = getMatchingContentScripts(extension, webview.src)
+  getAllScriptCode(extension, content_scripts, (err, code) => {
+    if (err) return callback(err)
+    webview.executeJavaScript(code, false, (result) => {
+      callback(null)
     })
   })
-  return success
 }
 
-function getScript (extension) {
+function getMatchingContentScripts (extension, url) {
+  return extension.content_scripts.filter((script) => {
+    return script.matches.some((match) => {
+      let pattern = match.replace(/\*/g, '.*')
+      return url.match(pattern)
+    }) // & check exclude_globs and include_globs
+  })
+}
+
+function getAllScriptCode (extension, content_scripts, callback) {
+  async.map(content_scripts, (content_script, cb) => getContentScriptCode(extension, content_script, cb), (err, scripts) => {
+    callback(err, scripts.join('\n'))
+  })
+}
+
+function getContentScriptCode (extension, content_script, callback) {
+  async.map(content_script.js, (path, cb) => getScript(extension, path, cb), (err, scripts) => {
+    callback(err, scripts.join('\n'))
+  })
+}
+
+function getScript (extension, path, callback) {
+  fs.readFile(extension.path + '/' + path, (err, contents) => {
+    callback(err, contents)
+  })
 }
