@@ -67,21 +67,37 @@ function localizeStrings (extension, callback) {
 }
 
 function addToWebview (webview, extension, callback) {
-  let content_scripts = getMatchingContentScripts(extension, webview.src)
-  getAllScriptCode(extension, content_scripts, (err, code) => {
+  let scripts = extension.content_scripts || []
+  let url = webview.src || webview.getURL()
+  scripts = getMatchingContentScripts(scripts, url)
+  scripts = getIncludedContentScripts(scripts, url)
+  // ToDo: check exclude_globs
+  if (scripts.length === 0) return callback(null)
+  getAllScriptCode(extension, scripts, (err, code) => {
     if (err) return callback(err)
     webview.executeJavaScript(code, false, (result) => {
+      console.log('Loaded extension', extension.name)
       callback(null)
     })
   })
 }
 
-function getMatchingContentScripts (extension, url) {
-  return extension.content_scripts.filter((script) => {
+function getMatchingContentScripts (scripts, url) {
+  return scripts.filter((script) => {
     return script.matches.some((match) => {
       let pattern = match.replace(/\*/g, '.*')
       return url.match(pattern)
-    }) // & check exclude_globs and include_globs
+    })
+  })
+}
+
+function getIncludedContentScripts (scripts, url) {
+  return scripts.filter((script) => {
+    if (!script.include_globs) return false
+    return script.include_globs.some((glob) => {
+      let pattern = glob.replace(/\*/g, '.*')
+      return url.match(pattern)
+    })
   })
 }
 

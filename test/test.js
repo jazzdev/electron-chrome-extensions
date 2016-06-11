@@ -41,7 +41,7 @@ exports.testAdd = function(test) {
   test.expect(3)
   chromeExtensions.load(__dirname + '/../test/extensions', function(err, extensions) {
     if (err) throw err
-    test.equal(1, extensions.length)
+    test.equal(1, extensions.length, extensions)
     var extension = extensions[0]
     test.equal(typeof(extension.name), 'string', 'Extension does not have a name')
     console.log('Found extension ' + extension.name)
