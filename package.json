@@ -2,7 +2,7 @@
   "name": "electron-chrome-extensions",
   "version": "0.1.0",
   "description": "Support Chrome extensions in Electron",
-  "main": "lib/index.js",
+  "main": "src/main.js",
   "files": [
     "lib/",
     "LICENSE"
